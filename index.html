@@ -1,157 +1,79 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>Design + Build</title>
-        <link rel="stylesheet" href="stylesheets/demo.css" media="screen">
-        <link rel="stylesheet" href="stylesheets/demo-print.css" media="print">
-        <script src="javascripts/raphael.js"></script>
-        <script>
-            window.onload = function () {
-                var r = Raphael("holder", 600, 600),
-                    R = 200,
-                    init = true,
-                    param = {stroke: "#fff", "stroke-width": 30},
-                    hash = document.location.hash,
-                    marksAttr = {fill: hash || "#444", stroke: "none"},
-                    html = [
-                        document.getElementById("h"),
-                        document.getElementById("m"),
-                        document.getElementById("s"),
-                        document.getElementById("d"),
-                        document.getElementById("mnth"),
-                        document.getElementById("ampm")
-                    ];
-                // Custom Attribute
-                r.customAttributes.arc = function (value, total, R) {
-                    var alpha = 360 / total * value,
-                        a = (90 - alpha) * Math.PI / 180,
-                        x = 300 + R * Math.cos(a),
-                        y = 300 - R * Math.sin(a),
-                        color = "hsb(".concat(Math.round(R) / 200, ",", value / total, ", .75)"),
-                        path;
-                    if (total == value) {
-                        path = [["M", 300, 300 - R], ["A", R, R, 0, 1, 1, 299.99, 300 - R]];
-                    } else {
-                        path = [["M", 300, 300 - R], ["A", R, R, 0, +(alpha > 180), 1, x, y]];
-                    }
-                    return {path: path, stroke: color};
-                };
+<html>
 
-                // drawMarks makes the dotted marks
-                drawMarks(R, 60);
-                var sec = r.path().attr(param).attr({arc: [0, 60, R]});
-                R -= 40;
-                drawMarks(R, 60);
-                var min = r.path().attr(param).attr({arc: [0, 60, R]});
-                R -= 40;
-                drawMarks(R, 12);
-                var hor = r.path().attr(param).attr({arc: [0, 12, R]});
-                R -= 40;
-                drawMarks(R, 31);
-                var day = r.path().attr(param).attr({arc: [0, 31, R]});
-                R -= 40;
-                drawMarks(R, 12);
-                var mon = r.path().attr(param).attr({arc: [0, 12, R]});
-                var pm = r.circle(300, 300, 16).attr({stroke: "none", fill: Raphael.hsb2rgb(15 / 200, 1, .75).hex});
-                html[5].style.color = Raphael.hsb2rgb(15 / 200, 1, .75).hex;
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Designbuild.io.site : ">
 
-                function updateVal(value, total, R, hand, id) {
-                    
-                    
-                    if (total == 31) { // month
-                        var d = new Date;
-                        d.setDate(1);
-                        d.setMonth(d.getMonth() + 1);
-                        d.setDate(-1);
-                        total = d.getDate();
-                    }
-                    var color = "hsb(".concat(Math.round(R) / 200, ",", value / total, ", .75)");
-                    if (init) {
-                        hand.animate({arc: [value, total, R]}, 900, ">");
-                    } else {
-                        if (!value || value == total) {
-                            value = total;
-                            hand.animate({arc: [value, total, R]}, 750, "bounce", function () {
-                                hand.attr({arc: [0, total, R]});
-                            });
-                        } else {
-                            hand.animate({arc: [value, total, R]}, 750, "elastic");
-                        }
-                    }
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-                    // PRS Correction so that hour, minute and second never show 60
-                    if (id <= 2 && value == 60) {
-                        value = 0;
-                        }
+    <title>Designbuild.io.site</title>
+  </head>
 
-                    html[id].innerHTML = (value < 10 ? "0" : "") + value;
-                    html[id].style.color = Raphael.getRGB(color).hex;
-                }
+  <body>
 
-                function drawMarks(R, total) {
-                    if (total == 31) { // month
-                        var d = new Date;
-                        d.setDate(1);
-                        d.setMonth(d.getMonth() + 1);
-                        d.setDate(-1);
-                        total = d.getDate();
-                    }
-                    var color = "hsb(".concat(Math.round(R) / 200, ", 1, .75)"),
-                        out = r.set();
-                    for (var value = 0; value < total; value++) {
-                        var alpha = 360 / total * value,
-                            a = (90 - alpha) * Math.PI / 180,
-                            x = 300 + R * Math.cos(a),
-                            y = 300 - R * Math.sin(a);
-                        out.push(r.circle(x, y, 2).attr(marksAttr));
-                    }
-                    return out;
-                }
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/Design-Build/designbuild.io.site">View on GitHub</a>
 
-                (function () {
-                    var d = new Date,
-                        am = (d.getHours() < 12),
-                        h = d.getHours() % 12 || 12;
-                    updateVal(d.getSeconds(), 60, 200, sec, 2);
-                    updateVal(d.getMinutes(), 60, 160, min, 1);
-                    updateVal(h, 12, 120, hor, 0);
-                    updateVal(d.getDate(), 31, 80, day, 3);
-                    updateVal(d.getMonth() + 1, 12, 40, mon, 4);
-                    pm[(am ? "hide" : "show")]();
-                    html[5].innerHTML = am ? "AM" : "PM";
-                    setTimeout(arguments.callee, 1000);
-                    init = false;
-                })();
-            };
-        </script>
-        <style media="screen">
-            #holder {
-                height: 600px;
-                margin: -300px 0 0 -300px;
-                width: 600px;
-            }
-            #time {
-                text-align: center;
-                font: 100 3em "Helvetica Neue", Helvetica, Arial, sans-serif;
-            }
+          <h1 id="project_title">Designbuild.io.site</h1>
+          <h2 id="project_tagline"></h2>
 
-            #title {
-                text-align: center;
-                font: 100 3em "Helvetica Neue", Helvetica, Arial, sans-serif;
-            }
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/Design-Build/designbuild.io.site/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/Design-Build/designbuild.io.site/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
 
-        </style>
-    </head>
-    <body>
-        <div id="holder"></div>
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h3>
+<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
 
-        <div id="title">
-            Design + Build<br><br>
-        </div>
+<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
 
-        <div id="time">
-            <span id="h"></span>:<span id="m"></span>:<span id="s"></span> <span id="ampm"></span> · <span id="d"></span>/<span id="mnth"></span>
-        </div>
-    </body>
+<pre><code>$ cd your_repo_root/repo_name
+$ git fetch origin
+$ git checkout gh-pages
+</code></pre>
+
+<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+
+<h3>
+<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+
+<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+
+<h3>
+<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
+
+<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+
+<h3>
+<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+
+<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+
+<h3>
+<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
+
+<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Designbuild.io.site maintained by <a href="https://github.com/Design-Build">Design-Build</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
 </html>
